@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MovingPlatform : MonoBehaviour
+public class MovingPlatformController : MonoBehaviour
 {
     [SerializeField] float speed;
     [SerializeField] List<Transform> waypoints;
@@ -12,10 +12,11 @@ public class MovingPlatform : MonoBehaviour
     bool isStoped;
     CharacterMovement playerMovement;
     Vector3 currentWaypoint;
-
+    Rigidbody platformRigidBody;
 
     private void Start()
     {
+        platformRigidBody = platformObject.GetComponent<Rigidbody>();
         currentWaypoint = waypoints[0].position;
         index = 0;
         isStoped = false;
@@ -32,10 +33,11 @@ public class MovingPlatform : MonoBehaviour
     private void UpdatePlatformMovement()
     {
         Vector3 oldPos = platformObject.transform.position;
+        Debug.Log(Time.fixedDeltaTime);
         Vector3 newPos = Vector3.MoveTowards(platformObject.transform.position, currentWaypoint, Time.fixedDeltaTime * speed);
-        platformObject.transform.position = newPos;
+        platformRigidBody.MovePosition(newPos);
+
         //updateplayer
-        Debug.Log(" " + (oldPos - newPos));
         HandlePlayerTranslation(newPos - oldPos);
 
         if (Vector3.Distance(platformObject.transform.position, currentWaypoint) < 0.01f)

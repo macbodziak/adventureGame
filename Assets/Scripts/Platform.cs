@@ -4,20 +4,15 @@ using UnityEngine;
 
 public class Platform : MonoBehaviour
 {
-    Vector3 prevPosition;
-    [SerializeField] MovingPlatform movingPlatform;
+    [SerializeField] MovingPlatformController platformController;
 
-    private void Awake()
-    {
-        prevPosition = transform.position;
-    }
 
     private void OnTriggerEnter(Collider other)
     {
 
         if (other.tag == "Player")
         {
-            movingPlatform.PlayerMovement = other.gameObject.GetComponentInParent<CharacterMovement>();
+            platformController.PlayerMovement = other.gameObject.GetComponentInParent<CharacterMovement>();
         }
     }
 
@@ -25,7 +20,7 @@ public class Platform : MonoBehaviour
     {
         if (other.tag == "Player")
         {
-            movingPlatform.PlayerMovement = null;
+            platformController.PlayerMovement = null;
         }
     }
 
