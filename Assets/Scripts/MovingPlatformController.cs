@@ -33,7 +33,6 @@ public class MovingPlatformController : MonoBehaviour
     private void UpdatePlatformMovement()
     {
         Vector3 oldPos = platformObject.transform.position;
-        Debug.Log(Time.fixedDeltaTime);
         Vector3 newPos = Vector3.MoveTowards(platformObject.transform.position, currentWaypoint, Time.fixedDeltaTime * speed);
         platformRigidBody.MovePosition(newPos);
 

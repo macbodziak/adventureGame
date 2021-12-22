@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] Vector3 offset;
     [SerializeField] float rotationSpeed;
     [SerializeField] float zoomSpeed;
+    [SerializeField] CharacterMovement playerController;
     float currentAngle;
 
     // Start is called before the first frame update
@@ -24,8 +25,9 @@ public class CameraController : MonoBehaviour
         offset.y = Mathf.Clamp(offset.y, -10f, -5f);
         offset.z = Mathf.Clamp(offset.z, 5f, 10f);
         transform.position = trackedObject.transform.position - offset;
-        // currentAngle += inputVector.x * Time.deltaTime * rotationSpeed;
+        currentAngle += inputVector.x * Time.deltaTime * rotationSpeed;
         transform.RotateAround(trackedObject.transform.position, Vector3.up, currentAngle);
         transform.LookAt(trackedObject);
+        playerController.CameraAngle = Quaternion.Euler(0f, currentAngle, 0f);
     }
 }

@@ -15,8 +15,9 @@ public class CharacterMovement : MonoBehaviour
     private Animator animator;
     private float currentRotation;
     bool isGroundedPrevFrame;
-    float fallingStartPosition;
+    float fallingMaxHeight;
     Vector3 platformVector;
+    Quaternion cameraAngle;
 
     private void Awake()
     {
@@ -24,7 +25,7 @@ public class CharacterMovement : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         Debug.Assert(charCon != null);
         Debug.Assert(animator != null);
-        fallingStartPosition = transform.position.y;
+        fallingMaxHeight = transform.position.y;
     }
 
     void Start()
@@ -46,6 +47,7 @@ public class CharacterMovement : MonoBehaviour
             Vector2 inputVector = GameManager.Instance.PlayerInput.Player.Move.ReadValue<Vector2>();
             movementVelocity.x = inputVector.x;
             movementVelocity.z = inputVector.y;
+            movementVelocity = cameraAngle * movementVelocity;
         }
         //allways apply some gravity, also so it detects isGrounded collision every frame when touching ground
         movementVelocity.y += gravity * Time.fixedDeltaTime;
@@ -103,7 +105,7 @@ public class CharacterMovement : MonoBehaviour
         //on grounded touched
         if (charCon.isGrounded && !isGroundedPrevFrame)
         {
-            float fallenHeight = transform.position.y - fallingStartPosition;
+            float fallenHeight = transform.position.y - fallingMaxHeight;
             if (fallenHeight < -fallToDamage)
             {
                 player.TakeDamage(25f);
@@ -116,12 +118,19 @@ public class CharacterMovement : MonoBehaviour
         //on take off
         if (!charCon.isGrounded && isGroundedPrevFrame)
         {
-            fallingStartPosition = transform.position.y;
+            // fallingMaxHeight = transform.position.y;
+            Debug.Log("taking off " + fallingMaxHeight);
         }
 
         if (!charCon.isGrounded)
         {
-            animator.SetFloat("FallenHeight", transform.position.y - fallingStartPosition);
+            animator.SetFloat("FallenHeight", transform.position.y - fallingMaxHeight);
+
+            if(transform.position.y > fallingMaxHeight)
+            {
+                fallingMaxHeight = transform.position.y;
+                Debug.Log("fallingMaxHeight " + fallingMaxHeight);
+            }
         }
 
         isGroundedPrevFrame = charCon.isGrounded;
@@ -136,6 +145,18 @@ public class CharacterMovement : MonoBehaviour
         set
         {
             platformVector = value;
+        }
+    }
+
+    public Quaternion CameraAngle
+    {
+        get
+        {
+            return cameraAngle;
+        }
+        set
+        {
+            cameraAngle = value;
         }
     }
 }
