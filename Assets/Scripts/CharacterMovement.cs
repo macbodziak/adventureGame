@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class CharacterMovement : MonoBehaviour
 {
+    enum State { InputEnabled, InputDisabled, Off };
+    State state;
     CharacterController charCon;
     [SerializeField] float movementSpeed;
     [SerializeField] float jumpSpeed;
@@ -36,29 +38,33 @@ public class CharacterMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (charCon.isGrounded && movementVelocity.y < 0.0f)
+        if (state != State.Off)
         {
-            movementVelocity.y = 0.0f;
+
+            if (charCon.isGrounded && movementVelocity.y < 0.0f)
+            {
+                movementVelocity.y = 0.0f;
+            }
+
+            if (charCon.isGrounded)
+            {
+                //apply movement input only when touching ground
+                Vector2 inputVector = GameManager.Instance.PlayerInput.Player.Move.ReadValue<Vector2>();
+                movementVelocity.x = inputVector.x;
+                movementVelocity.z = inputVector.y;
+                movementVelocity = cameraAngle * movementVelocity;
+            }
+            //allways apply some gravity, also so it detects isGrounded collision every frame when touching ground
+            movementVelocity.y += gravity * Time.fixedDeltaTime;
+
+            charCon.Move(movementVelocity * Time.fixedDeltaTime * movementSpeed + platformVector);
+            float animSpeed = new Vector3(movementVelocity.x, 0f, movementVelocity.z).magnitude;
+            animator.SetFloat("Speed", animSpeed * movementSpeed);
+            animator.SetBool("IsGrounded", charCon.isGrounded);
+
+            RotateCharacter();
+            HandleGroundBehaviour();
         }
-
-        if (charCon.isGrounded)
-        {
-            //apply movement input only when touching ground
-            Vector2 inputVector = GameManager.Instance.PlayerInput.Player.Move.ReadValue<Vector2>();
-            movementVelocity.x = inputVector.x;
-            movementVelocity.z = inputVector.y;
-            movementVelocity = cameraAngle * movementVelocity;
-        }
-        //allways apply some gravity, also so it detects isGrounded collision every frame when touching ground
-        movementVelocity.y += gravity * Time.fixedDeltaTime;
-
-        charCon.Move(movementVelocity * Time.fixedDeltaTime * movementSpeed + platformVector);
-        float animSpeed = new Vector3(movementVelocity.x, 0f, movementVelocity.z).magnitude;
-        animator.SetFloat("Speed", animSpeed * movementSpeed);
-        animator.SetBool("IsGrounded", charCon.isGrounded);
-
-        RotateCharacter();
-        HandleGroundBehaviour();
     }
 
     private void Jump(InputAction.CallbackContext context)
@@ -106,6 +112,8 @@ public class CharacterMovement : MonoBehaviour
         if (charCon.isGrounded && !isGroundedPrevFrame)
         {
             float fallenHeight = transform.position.y - fallingMaxHeight;
+            //reset height registered
+            fallingMaxHeight = transform.position.y;
             if (fallenHeight < -fallToDamage)
             {
                 player.TakeDamage(25f);
@@ -118,18 +126,16 @@ public class CharacterMovement : MonoBehaviour
         //on take off
         if (!charCon.isGrounded && isGroundedPrevFrame)
         {
-            // fallingMaxHeight = transform.position.y;
-            Debug.Log("taking off " + fallingMaxHeight);
+
         }
 
         if (!charCon.isGrounded)
         {
             animator.SetFloat("FallenHeight", transform.position.y - fallingMaxHeight);
 
-            if(transform.position.y > fallingMaxHeight)
+            if (transform.position.y > fallingMaxHeight)
             {
                 fallingMaxHeight = transform.position.y;
-                Debug.Log("fallingMaxHeight " + fallingMaxHeight);
             }
         }
 

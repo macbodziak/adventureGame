@@ -39,4 +39,9 @@ public class GameManager : MonoBehaviour
     {
         
     }
+
+    public void OnGameOver()
+    {
+        UIMenuManager.Instance.OnGameOver();
+    }
 }

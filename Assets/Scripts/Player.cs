@@ -27,6 +27,7 @@ public class Player : MonoBehaviour
     public void OnDeath()
     {
         Debug.Log("you died");
+        GameManager.Instance.OnGameOver();
     }
 
     private void SetHealthbar()
