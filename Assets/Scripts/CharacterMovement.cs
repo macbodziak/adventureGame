@@ -38,6 +38,7 @@ public class CharacterMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+  
         if (state != State.Off)
         {
 

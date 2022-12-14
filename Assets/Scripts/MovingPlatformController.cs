@@ -24,41 +24,46 @@ public class MovingPlatformController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isStoped == false)
-        {
-            UpdatePlatformMovement();
-        }
+        UpdatePlatformMovement();
     }
 
     private void UpdatePlatformMovement()
     {
-        Vector3 oldPos = platformObject.transform.position;
-        Vector3 newPos = Vector3.MoveTowards(platformObject.transform.position, currentWaypoint, Time.fixedDeltaTime * speed);
-        platformRigidBody.MovePosition(newPos);
-
-        //updateplayer
-        HandlePlayerTranslation(newPos - oldPos);
-
-        if (Vector3.Distance(platformObject.transform.position, currentWaypoint) < 0.01f)
+        if (isStoped == false)
         {
-            if (stopTimes[index] > 0)
-            {
-                isStoped = true;
-                HandlePlayerTranslation(Vector3.zero);
-                StartCoroutine("Stop", stopTimes[index]);
-            }
+            Vector3 oldPos = platformObject.transform.position;
+            Vector3 newPos = Vector3.MoveTowards(platformObject.transform.position, currentWaypoint, Time.fixedDeltaTime * speed);
+            platformRigidBody.MovePosition(newPos);
 
-            if (index == waypoints.Count - 1)
-            {
-                index = 0;
-            }
-            else
-            {
-                index++;
-            }
+            //updateplayer
+            HandlePlayerTranslation(newPos - oldPos);
 
-            currentWaypoint = waypoints[index].position;
+            if (Vector3.Distance(platformObject.transform.position, currentWaypoint) < 0.01f)
+            {
+                if (stopTimes[index] > 0)
+                {
+                    isStoped = true;
+                    StartCoroutine("Stop", stopTimes[index]);
+                }
+
+                if (index == waypoints.Count - 1)
+                {
+                    index = 0;
+                }
+                else
+                {
+                    index++;
+                }
+
+                currentWaypoint = waypoints[index].position;
+            }
         }
+        else
+        {
+            HandlePlayerTranslation(Vector3.zero);
+        }
+
+        
     }
 
     IEnumerator Stop(float stopTime)
@@ -71,20 +76,33 @@ public class MovingPlatformController : MonoBehaviour
     {
         if (playerMovement != null)
         {
+            //a hack to remove stutter when pushing player upwards, otherwise the isGrounded flag does not always work, the collider will push the character anyway
+            if (newPos.y > 0.0f)
+            {
+                newPos.y = 0.0f;
+            }
+            else if (newPos.y < 0.0f)
+            {
+                //characterController skin offset - to avoid a one frame false when stops
+                newPos.y -= 0.01f;
+            }
             playerMovement.PlatformVector = newPos;
         }
     }
 
-    public CharacterMovement PlayerMovement {
-        set {
-            if(value == null && playerMovement != null)
+    public CharacterMovement PlayerMovement
+    {
+        set
+        {
+            if (value == null && playerMovement != null)
             {
                 playerMovement.PlatformVector = Vector3.zero;
             }
             playerMovement = value;
         }
 
-        get {
+        get
+        {
             return playerMovement;
         }
     }

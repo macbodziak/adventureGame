@@ -41,6 +41,11 @@ public class UIMenuManager : MonoBehaviour
         healthBar.SetValue(value);
     }
 
+    public void UpdateDebug(string value)
+    {
+        DebugText.text = value;
+    }
+
     public void OnGameOver()
     {
         if (currentScreen != gameOverScreen)
